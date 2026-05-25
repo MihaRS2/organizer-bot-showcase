@@ -1,0 +1,77 @@
+# docker-compose.yml
+#
+# Секреты живут в ./secrets/*.txt (не коммитятся в git).
+# Не-секретные настройки — в .env.
+
+services:
+  bot_db:
+    image: postgres:15-alpine
+    container_name: organizer-bot-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    env_file: .env
+    environment:
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password   # postgres OOTB поддержка
+      TZ: "${TZ:-Europe/Moscow}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  caldav_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: organizer-bot-caldav
+    restart: unless-stopped
+    depends_on:
+      bot_db:
+        condition: service_healthy
+    network_mode: host
+    env_file: .env
+    secrets:
+      - bot_token
+      - caldav_password
+      - db_password
+      - hrbox_client_secret
+    environment:
+      DB_HOST: "127.0.0.1"
+      # *_FILE-паттерн читается в bot/config.py через _read_secret()
+      BOT_TOKEN_FILE: /run/secrets/bot_token
+      CALDAV_PASSWORD_FILE: /run/secrets/caldav_password
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      HRBOX_CLIENT_SECRET_FILE: /run/secrets/hrbox_client_secret
+      LOGLEVEL: "${LOGLEVEL:-INFO}"
+      MPLCONFIGDIR: /app/.config/matplotlib
+    volumes:
+      - backups:/backup
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# ── Секреты ────────────────────────────────────────────────────────────────
+secrets:
+  bot_token:
+    file: ./secrets/bot_token.txt
+  caldav_password:
+    file: ./secrets/caldav_password.txt
+  db_password:
+    file: ./secrets/db_password.txt
+  hrbox_client_secret:
+    file: ./secrets/hrbox_client_secret.txt
+
+volumes:
+  db_data:
+    name: organizer-bot2_db_data
+    external: true
+  backups:

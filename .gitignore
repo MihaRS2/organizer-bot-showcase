@@ -1,0 +1,70 @@
+# ─── Секреты (КРИТИЧНО — никогда не коммитить) ───────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_rsa.pub
+config.local.*
+
+# ─── Бэкапы БД ───────────────────────────────────────────────────────
+backup/
+backups/
+*.sql
+*.dump
+*.bak
+
+# ─── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ─── IDE / OS мусор ──────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Логи ────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Зипники патчей (история деплоев) ────────────────────────────────
+organizer-bot-*.zip
+*.zip
+
+# ─── Локальные ad-hoc-скрипты ────────────────────────────────────────
+check_*.py
+preview_*.py
+debug_*.py
+scratch.py
+temp_*.py
+
+# ─── Docker volumes ──────────────────────────────────────────────────
+pgdata/
+postgres_data/
